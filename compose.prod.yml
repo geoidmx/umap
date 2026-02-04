@@ -1,0 +1,33 @@
+services:
+  app:
+    restart: always
+    env_file:
+      - .env
+      - .env.prod
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/prod.conf:/etc/nginx/conf.d/default.conf
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+      - ./data/umap/static:/usr/share/nginx/html/static:ro
+      - ./data/umap/uploads:/usr/share/nginx/html/uploads:ro
+    depends_on:
+      - app
+    networks:
+      - umap-network
+
+  certbot:
+    image: certbot/certbot
+    restart: unless-stopped
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    networks:
+      - umap-network
