@@ -1,4 +1,4 @@
-app/data/posgres/
+app/data/postgres/
 app/data/umap/
 .DS_Store
 **/.DS_Store
